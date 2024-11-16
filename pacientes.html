@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STP - Sistema de Transferência de Pacientes</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+    <div id="header-container"> </div>
+
+
+    <main>
+        <div class="form-container">
+            <h1>Cadastro de Pacientes</h1>
+            
+            <form id="pacienteForm" class="user-form">
+                <div class="form-group">
+                    <label for="nome">Nome completo</label>
+                    <input type="text" id="nome" name="nome" required placeholder="Digite o nome do paciente">
+                </div>
+    
+                <div class="form-group">
+                    <label for="dataNascimento">Data de Nascimento</label>
+                    <input type="date" id="dataNascimento" name="dataNascimento" required>
+                </div>
+    
+                <div class="form-group">
+                    <label for="cpf">CPF</label>
+                    <input type="text" id="cpf" name="cpf" required placeholder="Digite o CPF">
+                </div>
+    
+                <div class="form-group">
+                    <label for="telefone">Telefone</label>
+                    <input type="tel" id="telefone" name="telefone" required placeholder="Digite o telefone">
+                </div>
+    
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Cadastrar</button>
+                    <button type="reset" class="btn-secondary">Limpar</button>
+                </div>
+            </form>
+    
+            <div class="table-container">
+                <h2>Pacientes Cadastrados</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Data Nascimento</th>
+                            <th>CPF</th>
+                            <th>Telefone</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pacientesTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+    <div id="footer-container"></div>
+
+    <script src="scripts/components.js"></script>
+    <script src="scripts/main.js"></script>
+</body>
+</html>

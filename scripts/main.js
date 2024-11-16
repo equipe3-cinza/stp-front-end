@@ -1,109 +1,209 @@
-function loadMenu() {
-    fetch("components/header.html")
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById("header-container").innerHTML = data;
-        })
-        .catch(error => console.error("Erro ao carregar o cabeçalho:", error));
-}
+const API_BASE_URL = 'http://localhost:3000';
 
-function loadFooter() {
-    fetch("components/footer.html")
-    .then(response => response.text())
-    .then(data => {
-        document.getElementById("footer-container").innerHTML = data;
-    })
-    .catch(error => console.error("Erro ao carregar o footer:", error));
-}
-
-
-async function loadPage(route) {
-    console.log('routes', route)
-
-    if (route === 'login') {
-        document.getElementById("header-container").innerHTML = '';
-        document.getElementById("footer-container").innerHTML = '';
-    } else {
-        loadMenu();
-        loadFooter();
+async function fetchData(url) {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Error: ${response.status}`);
+        return response.json();
     }
 
-    const page = `pages/${route}/${route}.html`;
-    const cssFile = `pages/${route}/${route}.css`;
-    fetch(page)
-        .then(response => response.text())
-        .then(data => {
-            removeOldCSS();
-            loadCSS(cssFile);
-            document.getElementById('template-container').innerHTML = data;
-            history.pushState({ route }, '', `#/${route}`);
-
-        })
-        .catch(error => console.error('Erro ao carregar a página:', error));
+async function saveData(url, method, data) {
+    const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error(`Error: ${response.status}`);
+    return response.json();
 }
 
-function loadCSS(cssFile) {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = cssFile;
-    link.className = 'dynamic-css'; // Adiciona uma classe para identificar os estilos dinâmicos
-    document.head.appendChild(link);
-}
-
-// Função para remover os estilos CSS antigos
-function removeOldCSS() {
-    const oldLinks = document.querySelectorAll('link.dynamic-css');
-    oldLinks.forEach(link => link.remove());
-}
-
-// Função para carregar o navbar
-function loadNavbar() {
-    fetch('./../e-commerce/components/navbar/navbar.html')
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('navbar-container').innerHTML = data;
+async function deleteData(url) {
+    try {
+        const response = await fetch(url, {
+            method: 'DELETE'
         });
-}
-
-// Função para gerenciar as rotas
-function handleRoute() {
-    const hash = window.location.hash.substring(2);
-    if (hash) {
-        loadPage(hash);
-    } else {
-        loadPage('login'); // Página padrão
+        if (!response.ok) throw new Error(`Error: ${response.status}`);
+        return response.json();
+    } catch (error) {
+        console.error('Error deleting:', error);
+        throw error;
     }
 }
 
-// Carrega o navbar e a página inicial ou a rota atual
-window.onload = function () {
-    loadNavbar();
-    handleRoute();
-};
+async function renderTable(tableId, apiUrl, rowTemplate) {
+    const tableBody = document.getElementById(tableId);
+    if (!tableBody) return;
 
-// Atualiza a página quando a hash da URL muda
-window.onhashchange = handleRoute;
-
-// Lida com o evento de navegação do histórico
-window.onpopstate = function (event) {
-    if (isLogado()) {
-        loadPage(event.state.route);
-    } else {
-        loadPage('login'); // Página padrão
+    try {
+        const data = await fetchData(apiUrl);
+        tableBody.innerHTML = data.map(rowTemplate).join('');
+    } catch (error) {
+        console.error('Error loading data:', error);
     }
-};
-
-function isLogado() {
-    const token = localStorage.getItem('token');
-    return token ? true : false;
 }
 
-function logar() {
-    localStorage.setItem('token', 'Bearer tokenMock');
-    loadPage('home');
+function getUserTemplate(user) {
+    return `
+        <tr>
+            <td>${user.nome}</td>
+            <td>${user.email}</td>
+            <td>${user.perfil}</td>
+            <td class="action-buttons">
+                <button class="btn-edit" onclick="editData('${API_BASE_URL}/users/${user.id}')">Editar</button>
+                <button class="btn-delete" onclick="deleteData('${API_BASE_URL}/users/${user.id}')">Excluir</button>
+            </td>
+        </tr>
+    `;
 }
 
-function logout() {
+function getHospitalTemplate(hospital) {
+    return `
+        <tr>
+            <td>${hospital.nome}</td>
+            <td>${hospital.endereco}</td>
+            <td>${hospital.telefone}</td>
+            <td class="action-buttons">
+                <button class="btn-edit" onclick="editData('${API_BASE_URL}/hospitals/${hospital.id}')">Editar</button>
+                <button class="btn-delete" onclick="deleteData('${API_BASE_URL}/hospitals/${hospital.id}')">Excluir</button>
+            </td>
+        </tr>
+    `;
+}
+
+function getPacienteTemplate(paciente) {
+    return `
+        <tr>
+            <td data-label="Nome">${paciente.nome}</td>
+            <td data-label="Data Nascimento">${new Date(paciente.dataNascimento).toLocaleDateString()}</td>
+            <td data-label="CPF">${paciente.cpf}</td>
+            <td data-label="Telefone">${paciente.telefone}</td>
+            <td data-label="Ações" class="action-buttons">
+                <button class="btn-edit" onclick="editData('${API_BASE_URL}/patients/${paciente.id}')">Editar</button>
+                <button class="btn-delete" onclick="deleteData('${API_BASE_URL}/patients/${paciente.id}')">Excluir</button>
+            </td>
+        </tr>
+    `;
+}
+function setupForm(form, apiUrl, renderCallback) {
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        const editId = form.dataset.editId;
+        
+        try {
+            const url = editId ? `${apiUrl}/${editId}` : apiUrl;
+            const method = editId ? 'PUT' : 'POST';
+            
+            await saveData(url, method, data);
+            await renderCallback();
+            resetForm(form);
+        } catch (error) {
+            console.error('Error saving:', error);
+        }
+    });
+}
+
+function resetForm(form) {
+    form.reset();
+    form.dataset.editId = '';
+    const submitButton = form.querySelector('button[type="submit"]');
+    if (submitButton) submitButton.textContent = 'Cadastrar';
+}
+
+async function editData(url) {
+    try {
+        const data = await fetchData(url);
+        const form = document.querySelector('form');
+        if (!form) return;
+
+        for (const [key, value] of Object.entries(data)) {
+            const input = form.querySelector(`[name="${key}"]`);
+            if (input) input.value = value;
+        }
+
+        form.dataset.editId = data.id;
+        const submitButton = form.querySelector('button[type="submit"]');
+        if (submitButton) submitButton.textContent = 'Atualizar';
+    } catch (error) {
+        console.error('Error editing:', error);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
+    if (!checkAuth()) return;
+    
+    //await loadComponent('components/footer', 'footer-container');
+    
+    const hospitalForm = document.getElementById('hospitalForm');
+    const pacienteForm = document.getElementById('pacienteForm');
+    const userForm = document.getElementById('userForm');
+
+    if (pacienteForm) {
+        setupForm(pacienteForm, `${API_BASE_URL}/patients`, renderPacientes);
+    }
+    if (hospitalForm) {
+        setupForm(hospitalForm, `${API_BASE_URL}/hospitals`, renderHospitais);
+    }
+    if (userForm) {
+        setupForm(userForm, `${API_BASE_URL}/users`, renderUsers);
+    }
+
+    async function renderUsers() {
+        await renderTable('usersTableBody', `${API_BASE_URL}/users`, getUserTemplate);
+    }
+
+    async function renderHospitais() {
+        await renderTable('hospitaisTableBody', `${API_BASE_URL}/hospitals`, getHospitalTemplate);
+    }
+
+    async function renderPacientes() {
+        await renderTable('pacientesTableBody', `${API_BASE_URL}/patients`, getPacienteTemplate);
+    }
+
+    if (document.getElementById('usersTableBody')) await renderUsers();
+    if (document.getElementById('hospitaisTableBody')) await renderHospitais();
+    if (document.getElementById('pacientesTableBody')) await renderPacientes();
+});
+async function logar() {
+    const usuario = document.getElementById('usuario').value;
+    const senha = document.getElementById('senha').value;
+
+    if (!usuario || !senha) {
+        alert('Por favor, preencha todos os campos');
+        return;
+    }
+
+    try {
+        const userData = await fetchData(`${API_BASE_URL}/users`);
+        const user = userData.find(u => u.email === usuario && u.senha === senha);
+        console.log(user);
+
+        if (user) {
+            localStorage.setItem('user', JSON.stringify(user));
+            localStorage.setItem('token', 'logged-in');
+            window.location.href = 'index.html';
+        } else {
+            alert('Usuário ou senha inválidos');
+        }
+        
+    } catch (error) {
+        console.error('Erro ao fazer login:', error);
+        alert('Erro ao fazer login. Verifique suas credenciais.');
+    }
+}function logout() {
     localStorage.removeItem('token');
-    loadPage('login');
+    localStorage.removeItem('user');
+    window.location.href = 'login.html';
+}
+
+function checkAuth() {
+    const token = localStorage.getItem('token');
+    const currentPage = window.location.pathname;
+    
+    if (!token && !currentPage.includes('login.html')) {
+        window.location.href = 'login.html';
+        return false;
+    }
+    return true;
 }
