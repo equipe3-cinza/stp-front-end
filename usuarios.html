@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>STP - Sistema de Transferência de Pacientes</title>
-    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div id="header-container"> </div>
@@ -14,37 +14,31 @@
         <h1>Cadastro de Usuários</h1>
         
         <form id="userForm" class="user-form">
+
+
             <div class="form-group">
-                <label for="nome">Nome completo</label>
-                <input type="text" id="nome" name="nome" required placeholder="Digite o nome completo">
+                <label for="login">Login</label>
+                <input type="text" id="login" name="login" required placeholder="Digite o login">
             </div>
 
             <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" required placeholder="Digite o email">
-            </div>
-
-            <div class="form-group">
-                <label for="senha">Senha</label>
-                <input type="password" id="senha" name="senha" required placeholder="Digite a senha">
+                <label for="password">Senha</label>
+                <input type="password" id="password" name="password" placeholder="Digite a senha">
             </div>
 
             <div class="form-group">
                 <label for="confirmarSenha">Confirmar Senha</label>
-                <input type="password" id="confirmarSenha" name="confirmarSenha" required placeholder="Confirme a senha">
+                <input type="password" id="password2" name="password2" placeholder="Confirme a senha">
             </div>
 
             <div class="form-group">
-                <label for="perfil">Perfil de Acesso</label>
-                <select id="perfil" name="perfil" required>
-                    <option value="">Selecione um perfil</option>
-                    <option value="admin">Administrador</option>
-                    <option value="medico">Médico</option>
-                    <option value="medico-regulador ">Médico Regulador</option>
-                    <option value="enfermeiro">Enfermeiro</option>
+                <label for="roles">Perfil de Acesso</label>
+                <select id="roles" name="roles" required multiple>
+                    <option value="ROLE_ADMIN">Administrador</option>
+                    <option value="ROLE_MEDICO">Médico</option>
+                    <option value="ROLE_MEDICO_REGULADOR">Médico Regulador</option>
                 </select>
             </div>
-
             <div class="form-actions">
                 <button type="submit" class="btn-primary">Cadastrar</button>
                 <button type="reset" class="btn-secondary">Limpar</button>
@@ -55,9 +49,8 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Nome</th>
-                        <th>Email</th>
-                        <th>Perfil</th>
+                        <th>Login</th>
+                        <th>Permições</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
