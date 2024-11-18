@@ -219,6 +219,20 @@ async function renderPacientes() {
     await renderTable('pacientesTableBody', `${API_BASE_URL}/paciente`, getPacienteTemplate);
 }
 
+async function loadMedicos() {
+    const medicosSelect = document.getElementById('medicos');
+    if (!medicosSelect) return;
+
+    try {
+        const data = await fetchData(`${API_BASE_URL}/medico`);
+        medicosSelect.innerHTML = data.map(medico => 
+            `<option value="${medico.id}">${medico.name} - CRM: ${medico.crm}</option>`
+        ).join('');
+    } catch (error) {
+        console.error('Error loading medicos:', error);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async function() {
     if (!checkAuth()) return;
     
@@ -230,6 +244,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         setupForm(pacienteForm, `${API_BASE_URL}/paciente`, renderPacientes);
     }
     if (hospitalForm) {
+        await loadMedicos();
         setupForm(hospitalForm, `${API_BASE_URL}/unidade`, renderHospitais);
     }
     if (userForm) {
