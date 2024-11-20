@@ -1,28 +1,54 @@
 const API_BASE_URL = 'http://localhost:3000/api';
 
 async function fetchData(url) {
-        const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token');
+    try {
         const response = await fetch(url, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         });
+        
+        if (response.status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+            return;
+        }
+        
         if (!response.ok) throw new Error(`Error: ${response.status}`);
         return response.json();
+    } catch (error) {
+        console.error('Fetch error:', error);
+        throw error;
     }
+}
 
 async function saveData(url, method, data) {
     const token = localStorage.getItem('token');
-    const response = await fetch(url, {
-        method,
-        headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(data)
-    });
-    if (!response.ok) throw new Error(`Error: ${response.status}`);
-    return response.json();
+    try {
+        const response = await fetch(url, {
+            method,
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (response.status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+            return;
+        }
+
+        if (!response.ok) throw new Error(`Error: ${response.status}`);
+        return response.json();
+    } catch (error) {
+        console.error('Save error:', error);
+        throw error;
+    }
 }
 
 async function deleteData(url) {
@@ -83,9 +109,9 @@ async function renderTable(tableId, apiUrl, rowTemplate) {
 function getUserTemplate(user) {
     return `
         <tr>
-            <td>${user.login}</td>
-            <td>${user.roles}</td>
-            <td class="action-buttons">
+            <td data-label="Login">${user.login}</td>
+            <td data-label="Perfil">${user.roles}</td>
+            <td data-label="Ações" class="action-buttons">
                 <button class="btn-edit" onclick="editData('${API_BASE_URL}/user/${user.id}')">Editar</button>
                 <button class="btn-delete" onclick="deleteData('${API_BASE_URL}/user/${user.id}')">Excluir</button>
             </td>
@@ -96,17 +122,16 @@ function getUserTemplate(user) {
 function getHospitalTemplate(hospital) {
     return `
         <tr>
-            <td>${hospital.nome}</td>
-            <td>${hospital.email}</td>
-            <td>${hospital.telefone}</td>
-            <td class="action-buttons">
+            <td data-label="Nome">${hospital.nome}</td>
+            <td data-label="E-mail">${hospital.email}</td>
+            <td data-label="Telefone">${hospital.telefone}</td>
+            <td data-label="Ações" class="action-buttons">
                 <button class="btn-edit" onclick="editData('${API_BASE_URL}/unidade/${hospital.id}')">Editar</button>
                 <button class="btn-delete" onclick="deleteData('${API_BASE_URL}/unidade/${hospital.id}')">Excluir</button>
             </td>
         </tr>
     `;
 }
-
 
 function getPacienteTemplate(paciente) {
     return `

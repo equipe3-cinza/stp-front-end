@@ -5,75 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>STP - Sistema de Transferência de Pacientes</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 
 <body>
-    <div id="header-container"> </div>
+    <div id="header-container"></div>
 
     <main>
         <div class="form-container">
             <h1>Cadastro de Hospitais</h1>
             
-            <form id="hospitalForm" class="user-form">
-                <div class="form-group">
-                    <label for="nome">Nome do Hospital</label>
-                    <input type="text" id="nome" name="nome" required placeholder="Digite o nome do hospital">
-                </div>
-            
-                <div class="form-group">
-                    <label for="email">E-mail</label>
-                    <input type="text" id="email" name="email" required placeholder="Digite o e-mail">
-                </div>
-            
-                <div class="form-group">
-                    <label for="telefone">Telefone</label>
-                    <input type="tel" id="telefone" name="telefone" required placeholder="Digite o telefone">
-                </div>
-            
-                <div class="form-group">
-                    <label for="endereco">Endereço</label>
-                    <input type="text" id="endereco" name="endereco" placeholder="Digite o endereço completo">
-                </div>
-            
-                <div class="form-group">
-                    <label for="dadosPessoal">Dados Pessoal</label>
-                    <textarea id="dadosPessoal" name="dadosPessoal"  placeholder="Digite informações sobre o quadro de pessoal"></textarea>
+            <form id="hospitalForm" class="form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="nome">Nome do Hospital</label>
+                        <input type="text" id="nome" name="nome" required placeholder="Digite o nome do hospital" maxlength="100">
+                    </div>
+                
+                    <div class="form-group">
+                        <label for="email">E-mail</label>
+                        <input type="email" id="email" name="email" required placeholder="exemplo@email.com">
+                    </div>
+                
+                    <div class="form-group">
+                        <label for="telefone">Telefone</label>
+                        <input type="tel" id="telefone" name="telefone" required placeholder="(00) 00000-0000" pattern="\(\d{2}\)\s\d{4,5}-\d{4}" maxlength="15">
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="latitude">Latitude</label>
-                    <input type="number" step="any" id="latitude" name="latitude" placeholder="Digite a latitude">
-                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="endereco">Endereço</label>
+                        <input type="text" id="endereco" name="endereco" placeholder="Digite o endereço completo" maxlength="200">
+                    </div>
                 
-                <div class="form-group">
-                    <label for="longitude">Longitude</label>
-                    <input type="number" step="any" id="longitude" name="longitude" placeholder="Digite a longitude">
+                    <div class="form-group">
+                        <label for="dadosPessoal">Dados Pessoal</label>
+                        <textarea id="dadosPessoal" name="dadosPessoal" placeholder="Digite informações sobre o quadro de pessoal"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="disponibilidadeLeitos">Disponibilidade de Leitos</label>
+                        <input type="text" id="disponibilidadeLeitos" name="disponibilidadeLeitos" placeholder="Digite a disponibilidade de leitos">
+                    </div>
                 </div>
-            
-                <div class="form-group">
-                    <label for="disponibilidadeLeitos">Disponibilidade de Leitos</label>
-                    <input type="text" id="disponibilidadeLeitos" name="disponibilidadeLeitos"  placeholder="Digite a disponibilidade de leitos">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="latitude">Latitude</label>
+                        <input type="number" step="any" id="latitude" name="latitude" placeholder="Digite a latitude">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="longitude">Longitude</label>
+                        <input type="number" step="any" id="longitude" name="longitude" placeholder="Digite a longitude">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="temUTI">Possui UTI?</label>
+                        <input type="checkbox" id="temUTI" name="temUTI">
+                    </div>
                 </div>
-            
-                <div class="form-group">
-                    <label for="especialidades">Especialidades</label>
-                    <select id="especialidades" name="especialidades" multiple >
-                        <option value="cardiologia">Cardiologia</option>
-                        <option value="neurologia">Neurologia</option>
-                        <option value="ortopedia">Ortopedia</option>
-                        <option value="pediatria">Pediatria</option>
-                    </select>
-                </div>
-            
-                <div class="form-group">
-                    <label for="medicos">Médicos</label>
-                    <select id="medicos" name="medicos" multiple>
-                    </select>
-                </div>
-            
-                <div class="form-group">
-                    <label for="temUTI">Possui UTI?</label>
-                    <input type="checkbox" id="temUTI" name="temUTI">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="especialidades">Especialidades</label>
+                        <select id="especialidades" name="especialidades" multiple>
+                            <option value="cardiologia">Cardiologia</option>
+                            <option value="neurologia">Neurologia</option>
+                            <option value="ortopedia">Ortopedia</option>
+                            <option value="pediatria">Pediatria</option>
+                        </select>
+                    </div>
+                
+                    <div class="form-group">
+                        <label for="medicos">Médicos</label>
+                        <select id="medicos" name="medicos" multiple>
+                        </select>
+                    </div>
                 </div>
             
                 <div class="form-actions">
@@ -82,29 +91,28 @@
                 </div>
             </form>
             
-    
             <div class="table-container">
                 <h2>Hospitais Cadastrados</h2>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Nome</th>
-                            <th>E-mail</th>
-                            <th>Telefone</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="hospitaisTableBody">
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>E-mail</th>
+                                <th>Telefone</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hospitaisTableBody">
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </main>
-    
 
     <div id="footer-container"></div>
     <script src="scripts/components.js"></script>
     <script src="scripts/main.js"></script>
-
 </body>
 </html>
