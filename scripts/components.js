@@ -40,3 +40,17 @@ async function loadComponent(component, containerId) {
     }
 }
 
+async function loadAddressForm() {
+    const response = await fetch('components/form-enderco.html');
+    const html = await response.text();
+    return html;
+}
+
+async function insertAddressForm() {
+    const addressHtml = await loadAddressForm();
+    const forms = document.querySelectorAll('.form-row');
+    forms[1].insertAdjacentHTML('beforeend', addressHtml);
+    
+}
+
+

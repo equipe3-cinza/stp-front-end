@@ -206,6 +206,10 @@ function resetForm(form) {
 async function editData(url) {
     try {
         const data = await fetchData(url);
+        console.log(data.endereco);
+        if (data.endereco) {
+            await loadEnderecoById(data.endereco);
+        }
         const form = document.querySelector('form');
         if (!form) return;
 
@@ -255,6 +259,32 @@ async function loadMedicos() {
         ).join('');
     } catch (error) {
         console.error('Error loading medicos:', error);
+    }
+}
+
+async function loadEnderecoById(enderecoId) {
+    try {
+        const data = await fetchData(`${API_BASE_URL}/endereco/${enderecoId}`);
+        const addressFields = document.querySelector('.address-fields');
+        if (addressFields && data) {
+            const cep = addressFields.querySelector('#cep');
+            const logradouro = addressFields.querySelector('#logradouro');
+            const numero = addressFields.querySelector('#numero');
+            const complemento = addressFields.querySelector('#complemento');
+            const bairro = addressFields.querySelector('#bairro');
+            const cidade = addressFields.querySelector('#cidade');
+            const estado = addressFields.querySelector('#estado');
+            
+            if (cep) cep.value = data.cep;
+            if (logradouro) logradouro.value = data.rua;
+            if (numero) numero.value = data.numero;
+            if (complemento) complemento.value = data.complemento;
+            if (bairro) bairro.value = data.bairro;
+            if (cidade) cidade.value = data.cidade;
+            if (estado) estado.value = data.estado;
+        }
+    } catch (error) {
+        console.error('Error loading address:', error);
     }
 }
 
