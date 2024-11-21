@@ -27,7 +27,25 @@ async function fetchData(url) {
 async function saveData(url, method, data) {
     const token = localStorage.getItem('token');
 
+    if (data.prontuario){
+        console.log("saving prontuario ", data);
+        
+        if (data.prontuario.id) {
+            const idProntuario= data.prontuario.id;
+            console.log("PUT prontuario ", data.prontuario);
+            delete data.prontuario.id;
+            await saveData(`${API_BASE_URL}/prontuario/${idProntuario}`, 'PUT', data.prontuario);
+            data.prontuario = idProntuario;
+        } else {
+            console.log("POST prontuario ", data);
+            saveData(`${API_BASE_URL}/prontuario`, 'POST', data.prontuario);
+        }
+        console.log("prontuario salvo ", data);
+        delete data.id;
+    }
+
     try {
+        console.log("prontuario salvo ", data);
         const response = await fetch(url, {
             method,
             headers: { 
@@ -108,32 +126,12 @@ async function renderTable(tableId, apiUrl, rowTemplate) {
     }
 }
 
-async function getHospital(id) {
-    try {
-        const data = await fetchData(`${API_BASE_URL}/unidade/${id}`);
-        return data;
-    } catch (error) {
-        console.error('Error loading Hospital:', error);
-        return [];
-    }
-}
-
-async function getPaciente(id) {
-    try {
-        const data = await fetchData(`${API_BASE_URL}/paciente/${id}`);
-        return data;
-    } catch (error) {
-        console.error('Error loading Paciente:', error);
-        return [];
-    }
-}
-
 async function enderecoPaciente(){
     const form = document.getElementById('pacienteForm');
     const pacienteId = form.dataset.editId;
     try {
-        console.log(pacienteId);
-        const paciente = await getPaciente(pacienteId);
+        console.log(`Id do paciente= ${pacienteId}`);
+        const paciente = await fetchData(`${API_BASE_URL}/paciente/${pacienteId}`);        
         const enderecoId = paciente.endereco;
         if (enderecoId) {
             window.location.href = `endereco.html?enderecoId=${enderecoId}`;
@@ -150,8 +148,8 @@ async function enderecoHospital() {
     const form = document.getElementById('hospitalForm');
     const hospitalId = form.dataset.editId;
     try {
-        console.log(hospitalId);
-        const hospital = await getHospital(hospitalId);
+        console.log(`Id do paciente= ${hospitalId}`);
+        const hospital = await fetchData(`${API_BASE_URL}/unidade/${hospitalId}`);
         const enderecoId = hospital.endereco;
         if (enderecoId) {
             window.location.href = `endereco.html?enderecoId=${enderecoId}`;
@@ -242,15 +240,27 @@ function setupForm(form, apiUrl, renderCallback) {
             const selectedRoles = Array.from(rolesSelect.selectedOptions).map(option => option.value);
             data.roles = selectedRoles;
         }
-
+        
         if (form.id === 'pacienteForm') {
+            if (form.dataset.editId) {
+                data.id = form.dataset.editId;
+            }
+            
+            data.prontuario = data.prontuario || {};
             const medicamentosSelect = form.querySelector('#medicamentosAtuais');
             const classificacaoSelect = form.querySelector('#classificacao');
-            data.prontuario.classificacao = Array.from(classificacaoSelect.selectedOptions).map(option => option.value);
-            data.prontuario.medicamentosAtuais = Array.from(medicamentosSelect.selectedOptions).map(option => option.value);
-            
+            data.prontuario = {
+                id: form.querySelector('#prontuarioId').value || null,
+                classificacao: classificacaoSelect.value,
+                medicamentosAtuais: Array.from(medicamentosSelect.selectedOptions).map(option => option.value)
+            };
+            delete data.classificacao;
+            delete data.medicamentosAtuais;
+            delete data.prontuarioId;
+            console.log("setupForm ", data);
+
         }
-        
+
         const editId = form.dataset.editId;
         
         try {
@@ -289,9 +299,10 @@ async function editData(url) {
     try {
         const data = await fetchData(url);
         
-        if (data.endereco) {
-            await loadEnderecoById(data.endereco);
-        }
+   //     if (data.endereco) {
+   //        await loadEnderecoById(data.endereco);
+   //     }
+
         const form = document.querySelector('form');
         if (!form) return;
         
@@ -313,14 +324,19 @@ async function editData(url) {
         }
 
         if (data.prontuario) {
-            const prontuarioData = await getProntuarioById(data.prontuario);
+            const prontuarioData = await fetchData(`${API_BASE_URL}/prontuario/${data.prontuario}`);
+            
             const medicamentosSelect = form.querySelector('#medicamentosAtuais');
             const classificacaoSelect = form.querySelector('#classificacao');
             
             if (classificacaoSelect) {
                 classificacaoSelect.value = prontuarioData.classificacao;
             }
-            
+            const prontuarioIdInput = form.querySelector('#prontuarioId');
+            if (prontuarioIdInput) {
+                prontuarioIdInput.value = data.prontuario;
+            }
+
             if (medicamentosSelect && prontuarioData.medicamentosAtuais) {
                 Array.from(medicamentosSelect.options).forEach(option => {
                     option.selected = false;
@@ -333,6 +349,7 @@ async function editData(url) {
                     }
                 });
             }
+            console.log("editdata ", data);
         }
         
         if (url.includes('/paciente/')) {
@@ -417,16 +434,6 @@ async function loadEnderecoById(enderecoId) {
         }
     } catch (error) {
         console.error('Error loading address:', error);
-    }
-}
-
-async function getProntuarioById(prontuarioId) {
-    try {
-        const data = await fetchData(`${API_BASE_URL}/prontuario/${prontuarioId}`);
-        return data;
-    } catch (error) {
-        console.error('Error loading Prontuario:', error);
-        return [];
     }
 }
 
