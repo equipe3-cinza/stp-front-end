@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'http://54.221.110.123:3000/api';
 
 async function fetchData(url) {
     const token = localStorage.getItem('token');
@@ -28,24 +28,31 @@ async function saveData(url, method, data) {
     const token = localStorage.getItem('token');
 
     if (data.prontuario){
-        console.log("saving prontuario ", data);
-        
-        if (data.prontuario.id) {
-            const idProntuario= data.prontuario.id;
-            console.log("PUT prontuario ", data.prontuario);
-            delete data.prontuario.id;
-            await saveData(`${API_BASE_URL}/prontuario/${idProntuario}`, 'PUT', data.prontuario);
-            data.prontuario = idProntuario;
-        } else {
-            console.log("POST prontuario ", data);
-            saveData(`${API_BASE_URL}/prontuario`, 'POST', data.prontuario);
+        const prontuario = data.prontuario;
+        prontuario.paciente = "";
+        console.log("saving prontuario ", prontuario);
+        if (prontuario.id) {
+            data.prontuario = prontuario.id;
+            delete prontuario.id;
+            console.log("PUT prontuario ", prontuario);
+            await saveData(`${API_BASE_URL}/prontuario/${data.prontuario}`, 'PUT', prontuario);       
+        } else {  
+            delete prontuario.id;          
+            console.log("POST prontuario ", prontuario);
+            const savedProntuario = await saveData(`${API_BASE_URL}/prontuario`, 'POST', prontuario);
+            data.prontuario = savedProntuario.id;
         }
-        console.log("prontuario salvo ", data);
-        delete data.id;
+        console.log("prontuario salvo ", data.prontuario);
+        if (method === 'PUT'&&  data.id) {
+            delete data.id;
+        }
+        if (!data.endereco){
+            data.endereco= "";
+        }
     }
-
+        
     try {
-        console.log("prontuario salvo ", data);
+        console.log("saving data...", data);
         const response = await fetch(url, {
             method,
             headers: { 
@@ -53,23 +60,27 @@ async function saveData(url, method, data) {
                 'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(data)
-        });
-
+        });        
         if (response.status === 401) {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             window.location.href = 'login.html';
             return;
         }
+        if (response.status === 400) {
+            const errorData = await response.json();
+            console.error('Error:', errorData);
+            throw new Error(errorData.message || response.statusText);
+        }
 
         if (!response.ok) throw new Error(`Error: ${response.status}`);
+        console.log("saved data!", data);
         return response.json();
     } catch (error) {
         console.error('Save error:', error);
         throw error;
     }
 }
-
 async function deleteData(url) {
     try {
         const token = localStorage.getItem('token');
@@ -129,6 +140,10 @@ async function renderTable(tableId, apiUrl, rowTemplate) {
 async function enderecoPaciente(){
     const form = document.getElementById('pacienteForm');
     const pacienteId = form.dataset.editId;
+    if (!pacienteId) {
+        alert('Por favor, salve o paciente primeiro antes de adicionar um endereço');
+        return;
+    }
     try {
         console.log(`Id do paciente= ${pacienteId}`);
         const paciente = await fetchData(`${API_BASE_URL}/paciente/${pacienteId}`);        
@@ -136,25 +151,30 @@ async function enderecoPaciente(){
         if (enderecoId) {
             window.location.href = `endereco.html?enderecoId=${enderecoId}`;
         } else {
-            alert('Salve o paciente primeiro antes de cadastrar o endereço');
+            const newEnderecoId = await novoEndereco();
+            window.location.href = `endereco.html?enderecoId=${newEnderecoId}`;
         }
     } catch (error) {
         console.error('Error:', error);
         alert('Erro ao buscar dados do paciente');
     }
 }
-
 async function enderecoHospital() {
     const form = document.getElementById('hospitalForm');
     const hospitalId = form.dataset.editId;
+    if (!hospitalId) {
+        alert('Por favor, salve o hospital primeiro antes de adicionar um endereço');
+        return;
+    }
     try {
-        console.log(`Id do paciente= ${hospitalId}`);
+        
         const hospital = await fetchData(`${API_BASE_URL}/unidade/${hospitalId}`);
         const enderecoId = hospital.endereco;
         if (enderecoId) {
             window.location.href = `endereco.html?enderecoId=${enderecoId}`;
         } else {
-            alert('Salve o hospital primeiro antes de cadastrar o endereço');
+            const newEnderecoId = await novoEndereco();
+            window.location.href = `endereco.html?enderecoId=${newEnderecoId}`;
         }
     } catch (error) {
         console.error('Error:', error);
@@ -162,7 +182,25 @@ async function enderecoHospital() {
     }
 }
 
-
+async function novoEndereco() {
+    const endereco = {
+        "rua": "",
+        "numero": "",
+        "complemento": "",
+        "bairro": "",
+        "cidade": "",
+        "estado": "",
+        "pais": "",
+        "cep": ""
+    };
+    try {
+        const response = await saveData(`${API_BASE_URL}/endereco`, 'POST', endereco);
+        return response.id;
+    } catch (error) {
+        console.error('Error creating new address:', error);
+        throw error;
+    }
+}
 
 function getUserTemplate(user) {
     return `
@@ -233,6 +271,9 @@ function setupForm(form, apiUrl, renderCallback) {
             data.especialidades = Array.from(especialidadesSelect.selectedOptions).map(option => option.value);
             data.medicos = Array.from(medicosSelect.selectedOptions).map(option => option.value);
             data.temUTI = form.querySelector('#temUTI').checked;
+            if (!data.endereco){
+                data.endereco= "";
+            }
         }
         
         if (form.id === 'userForm') {
