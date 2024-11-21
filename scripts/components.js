@@ -53,4 +53,15 @@ async function insertAddressForm() {
     
 }
 
+async function loadProntuarioForm() {
+    const response = await fetch('components/prontuario.html');
+    const html = await response.text();
+    return html;
+}
+
+async function insertProntuarioForm() {
+    const prontuarioHtml = await loadProntuarioForm();
+    const forms = document.querySelectorAll('.form-row');
+    forms[2].insertAdjacentHTML('beforeend', prontuarioHtml);
+}
 

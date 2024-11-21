@@ -26,6 +26,7 @@ async function fetchData(url) {
 
 async function saveData(url, method, data) {
     const token = localStorage.getItem('token');
+
     try {
         const response = await fetch(url, {
             method,
@@ -101,10 +102,69 @@ async function renderTable(tableId, apiUrl, rowTemplate) {
             return response.json();
         });
         tableBody.innerHTML = data.map(rowTemplate).join('');
+
     } catch (error) {
         console.error('Error loading data:', error);
     }
 }
+
+async function getHospital(id) {
+    try {
+        const data = await fetchData(`${API_BASE_URL}/unidade/${id}`);
+        return data;
+    } catch (error) {
+        console.error('Error loading Hospital:', error);
+        return [];
+    }
+}
+
+async function getPaciente(id) {
+    try {
+        const data = await fetchData(`${API_BASE_URL}/paciente/${id}`);
+        return data;
+    } catch (error) {
+        console.error('Error loading Paciente:', error);
+        return [];
+    }
+}
+
+async function enderecoPaciente(){
+    const form = document.getElementById('pacienteForm');
+    const pacienteId = form.dataset.editId;
+    try {
+        console.log(pacienteId);
+        const paciente = await getPaciente(pacienteId);
+        const enderecoId = paciente.endereco;
+        if (enderecoId) {
+            window.location.href = `endereco.html?enderecoId=${enderecoId}`;
+        } else {
+            alert('Salve o paciente primeiro antes de cadastrar o endereço');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Erro ao buscar dados do paciente');
+    }
+}
+
+async function enderecoHospital() {
+    const form = document.getElementById('hospitalForm');
+    const hospitalId = form.dataset.editId;
+    try {
+        console.log(hospitalId);
+        const hospital = await getHospital(hospitalId);
+        const enderecoId = hospital.endereco;
+        if (enderecoId) {
+            window.location.href = `endereco.html?enderecoId=${enderecoId}`;
+        } else {
+            alert('Salve o hospital primeiro antes de cadastrar o endereço');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Erro ao buscar dados do hospital');
+    }
+}
+
+
 
 function getUserTemplate(user) {
     return `
@@ -134,6 +194,7 @@ function getHospitalTemplate(hospital) {
 }
 
 function getPacienteTemplate(paciente) {
+    const medicamentos = paciente.prontuario?.medicamentosAtuais?.join(', ') || 'Nenhum medicamento';
     return `
         <tr>
             <td data-label="Nome">${paciente.nome}</td>
@@ -147,6 +208,7 @@ function getPacienteTemplate(paciente) {
         </tr>
     `;
 }
+
 
 function setupForm(form, apiUrl, renderCallback) {
     form.addEventListener('submit', async function(e) {
@@ -180,7 +242,15 @@ function setupForm(form, apiUrl, renderCallback) {
             const selectedRoles = Array.from(rolesSelect.selectedOptions).map(option => option.value);
             data.roles = selectedRoles;
         }
-        console.log(data);
+
+        if (form.id === 'pacienteForm') {
+            const medicamentosSelect = form.querySelector('#medicamentosAtuais');
+            const classificacaoSelect = form.querySelector('#classificacao');
+            data.prontuario.classificacao = Array.from(classificacaoSelect.selectedOptions).map(option => option.value);
+            data.prontuario.medicamentosAtuais = Array.from(medicamentosSelect.selectedOptions).map(option => option.value);
+            
+        }
+        
         const editId = form.dataset.editId;
         
         try {
@@ -199,19 +269,32 @@ function setupForm(form, apiUrl, renderCallback) {
 function resetForm(form) {
     form.reset();
     form.dataset.editId = '';
+
+    
+    const multiSelects = form.querySelectorAll('select[multiple]');
+    multiSelects.forEach(select => {
+        Array.from(select.options).forEach(option => {
+            option.selected = false;
+        });
+    });
+   
     const submitButton = form.querySelector('button[type="submit"]');
-    if (submitButton) submitButton.textContent = 'Cadastrar';
+    if (submitButton) {
+        submitButton.textContent = 'Cadastrar';
+    }
 }
+
 
 async function editData(url) {
     try {
         const data = await fetchData(url);
-        console.log(data.endereco);
+        
         if (data.endereco) {
             await loadEnderecoById(data.endereco);
         }
         const form = document.querySelector('form');
         if (!form) return;
+        
 
         for (const [key, value] of Object.entries(data)) {
             const input = form.querySelector(`[name="${key}"]`);
@@ -229,13 +312,47 @@ async function editData(url) {
             }
         }
 
+        if (data.prontuario) {
+            const prontuarioData = await getProntuarioById(data.prontuario);
+            const medicamentosSelect = form.querySelector('#medicamentosAtuais');
+            const classificacaoSelect = form.querySelector('#classificacao');
+            
+            if (classificacaoSelect) {
+                classificacaoSelect.value = prontuarioData.classificacao;
+            }
+            
+            if (medicamentosSelect && prontuarioData.medicamentosAtuais) {
+                Array.from(medicamentosSelect.options).forEach(option => {
+                    option.selected = false;
+                });
+                
+                prontuarioData.medicamentosAtuais.forEach(medicamentoId => {
+                    const option = medicamentosSelect.querySelector(`option[value="${medicamentoId}"]`);
+                    if (option) {
+                        option.selected = true;
+                    }
+                });
+            }
+        }
+        
+        if (url.includes('/paciente/')) {
+            const submitButton = document.querySelector('#pacienteForm button[type="submit"]');
+            if (submitButton) {
+                submitButton.textContent = 'Atualizar';
+            }
+        }
+
         form.dataset.editId = data.id;
         const submitButton = form.querySelector('button[type="submit"]');
-        if (submitButton) submitButton.textContent = 'Atualizar';
+        if (submitButton) {
+            submitButton.textContent = 'Atualizar';
+        }
+
     } catch (error) {
         console.error('Error editing:', error);
     }
 }
+
 async function renderUsers() {
     await renderTable('usersTableBody', `${API_BASE_URL}/user`, getUserTemplate);
 }
@@ -259,6 +376,21 @@ async function loadMedicos() {
         ).join('');
     } catch (error) {
         console.error('Error loading medicos:', error);
+    }
+}
+
+async function loadMedicamentos() {
+    const medicamentosSelect = document.getElementById('medicamentosAtuais');
+    if (!medicamentosSelect) return;
+
+    try {
+        const data = await fetchData(`${API_BASE_URL}/medicamento`);
+
+        medicamentosSelect.innerHTML = data.map(medicamento => 
+            `<option value="${medicamento.id}">${medicamento.nome}</option>`
+        ).join('');
+    } catch (error) {
+        console.error('Error loading medicamentos:', error);
     }
 }
 
@@ -288,6 +420,16 @@ async function loadEnderecoById(enderecoId) {
     }
 }
 
+async function getProntuarioById(prontuarioId) {
+    try {
+        const data = await fetchData(`${API_BASE_URL}/prontuario/${prontuarioId}`);
+        return data;
+    } catch (error) {
+        console.error('Error loading Prontuario:', error);
+        return [];
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async function() {
     if (!checkAuth()) return;
     
@@ -296,6 +438,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const userForm = document.getElementById('userForm');
 
     if (pacienteForm) {
+        await loadMedicamentos();
         setupForm(pacienteForm, `${API_BASE_URL}/paciente`, renderPacientes);
     }
     if (hospitalForm) {
@@ -334,7 +477,6 @@ async function logar() {
 
         const data = await response.json();
         if (response.ok) {
-            // Store user data with roles and id
             localStorage.setItem('user', JSON.stringify({
                 id: data.user.id,
                 login: data.user.login,
@@ -369,3 +511,4 @@ function checkAuth() {
     }
     return true;
 }
+
