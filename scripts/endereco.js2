@@ -101,12 +101,10 @@ function handleUnauthorized() {
 }
 
 function showSuccessMessage(message) {
-    // Implement your success message UI
     showToast(message);
 }
 
 function showErrorMessage(message) {
-    // Implement your error message UI
     showToast(message);
 }
 

@@ -1,6 +1,6 @@
 import { fetchData, saveData, deleteData , API_BASE_URL} from './api.js';
 import { login, logout, checkAuth } from './auth.js';
-import { editData, setupForm, resetForm } from './forms.js';
+import { editData, setupForm, setupEnderecoForm, resetForm } from './forms.js';
 import { renderTable, renderUsers, renderHospitais, renderPacientes } from './renders.js';
 import { getUserTemplate, getHospitalTemplate, getPacienteTemplate } from './templates.js'
 import { loadEnderecoData, loadEnderecoById, loadMedicamentos, loadMedicos } from './loaders.js';
@@ -18,9 +18,12 @@ function refreshView(url) {
 document.addEventListener('DOMContentLoaded', async function() {
     if (!checkAuth()) return;
     
+    setupEnderecoForm();
+    
     const hospitalForm = document.getElementById('hospitalForm');
     const pacienteForm = document.getElementById('pacienteForm');
     const userForm = document.getElementById('userForm');
+    const enderecoForm = document.getElementById('enderecoForm');
 
     const forms = [hospitalForm, pacienteForm, userForm].filter(form => form);
     forms.forEach(form => {

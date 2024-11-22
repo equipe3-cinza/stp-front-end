@@ -1,21 +1,23 @@
-import { saveData } from './api.js';
+import {  loadEnderecoById } from './loaders.js';
 import { showToast } from './notifications.js';
-import { fetchData, API_BASE_URL } from './api.js';
+import { salvarEndereco,saveData,fetchData, API_BASE_URL } from './api.js';
+
 
 
 export function setupForm(form, apiUrl, renderCallback) {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
+    console.log("setupForm ");
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        if (form.id === 'userForm') {
+            const password = form.querySelector('#password').value;
+            const password2 = form.querySelector('#password2').value;
             
-            if (form.id === 'userForm') {
-                const password = form.querySelector('#password').value;
-                const password2 = form.querySelector('#password2').value;
-                
-                if (password !== password2) {
-                    showToast('As senhas não coincidem!');
-                    return;
-                }
+            if (password !== password2) {
+                showToast('As senhas não coincidem!');
+                return;
             }
+        }
     
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
@@ -55,10 +57,14 @@ export function setupForm(form, apiUrl, renderCallback) {
                 delete data.classificacao;
                 delete data.medicamentosAtuais;
                 delete data.prontuarioId;
-                console.log("setupForm ", data);
-    
+
             }
-    
+            const btnEndereco = form.querySelector('#btnEndereco');
+            if (btnEndereco && data.endereco) {
+                btnEndereco.onclick = () => {
+                    window.location.href = `endereco.html?enderecoId=${data.endereco}`;
+                };
+            }
             const editId = form.dataset.editId;
             
             try {
@@ -68,11 +74,14 @@ export function setupForm(form, apiUrl, renderCallback) {
                 const savedData = await saveData(url, method, data);
                 await renderCallback();
                 resetForm(form);
-                if (confirm('Deseja editar o endereço?')) {
-                    window.location.href = `endereco.html?enderecoId=${savedData.endereco}`;
+                if (savedData.endereco) {
+                    if (confirm('Deseja editar o endereço?')) {
+                        window.location.href = `endereco.html?enderecoId=${savedData.endereco}`;
+                    }
                 }
             } catch (error) {
                 console.error('Error saving:', error);
+                showToast('Erro ao salvar dados: ' + error.message);
             }
         });
     }
@@ -189,48 +198,53 @@ export async function editData(url) {
             submitButton.textContent = 'Atualizar';
         }
 
-        const buttonEndereco = form.querySelector('#btnEndereco');
-        if (buttonEndereco) {
-            buttonEndereco.style.visibility = 'visible';
-        }
+            const buttonEndereco = form.querySelector('#btnEndereco');
+            if (buttonEndereco) {
+                buttonEndereco.style.visibility = 'visible';
+                buttonEndereco.onclick = () => {
+                    window.location.href = `endereco.html?enderecoId=${data.endereco}`;
+                };
+            }
 
     } catch (error) {
         console.error('Error editing:', error);
     }
 }
 
-async function createEmptyAddress() {
-    const emptyAddress = {
-        cep: '',
-        rua: '',
-        numero: '',
-        complemento: '',
-        bairro: '',
-        cidade: '',
-        estado: '',
-        pais: 'Brasil'
-    };
+
+
+export function setupEnderecoForm() {
+    const enderecoForm = document.getElementById('enderecoForm');
+    if (!enderecoForm) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const enderecoId = params.get('enderecoId');
     
-    const response = await saveData(`${API_BASE_URL}/endereco`, 'POST', emptyAddress);
-    return response.id;
-}
+    if (enderecoId) {
+        loadEnderecoById(enderecoId);
+    }
 
-const btnEndereco = document.querySelector('#btnEndereco');
-if (btnEndereco) {
-    btnEndereco.addEventListener('click', async () => {
-        const form = document.querySelector('form');
-        const endpoint = window.location.pathname.includes('/paciente/') ? 'paciente' : 'unidade';
-        const data = await fetchData(`${API_BASE_URL}/${endpoint}/${form.dataset.editId}`);
-
-        if (data) {
-            let enderecoId = data.endereco;
-            if (!enderecoId) {
-                enderecoId = await createEmptyAddress();
-                data.endereco = enderecoId;
-                await saveData(`${API_BASE_URL}/${endpoint}/${form.dataset.editId}`, 'PUT', data);
-            }
-            
-            window.location.href = `endereco.html?enderecoId=${enderecoId}`;
+    enderecoForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const enderecoData = getEnderecoFormData();
+        try {
+            await salvarEndereco(enderecoData);
+            resetForm(enderecoForm);
+            setTimeout(() => window.history.back(), 1500);
+        } catch (error) {
+            console.error('Error saving address:', error);
+            showToast('Erro ao salvar endereço');
         }
     });
+}
+function getEnderecoFormData() {
+    const fields = ['cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'estado'];
+    const formData = {};
+    fields.forEach(field => {
+        const element = document.getElementById(field);
+        if (element) {
+            formData[field] = element.value;
+        }
+    });
+    return formData;
 }

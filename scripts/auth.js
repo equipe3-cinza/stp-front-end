@@ -1,7 +1,6 @@
 import { API_BASE_URL } from "./api.js";
 
 export async function login() {
-//export async function login(usuario, senha) {
 
     const usuario = document.getElementById('usuario').value;
     const senha = document.getElementById('senha').value;

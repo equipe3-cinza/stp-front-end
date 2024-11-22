@@ -69,9 +69,13 @@ export async function saveData(url, method, data) {
         if (method === 'PUT'&&  data.id) {
             delete data.id;
         }
-        if (!data.endereco){
-            data.endereco= "";
-        }
+    }
+
+    if (method === 'POST' && (url.includes('/paciente') || url.includes('/unidade'))) {
+        const endereco = await createEmptyAddress();
+        console.log("id novo endereco ", data.endereco);
+        data.endereco = endereco.id;
+        console.log("id novo endereco ", data.endereco);
     }
         
     try {
@@ -106,7 +110,26 @@ export async function saveData(url, method, data) {
     }
 }
 
-
+async function createEmptyAddress() {
+    const emptyAddress = {
+        cep: '',
+        rua: '',
+        numero: '',
+        complemento: '',
+        bairro: '',
+        cidade: '',
+        estado: '',
+        pais: 'Brasil'
+    };
+    
+    try {
+        const response = await saveData(`${API_BASE_URL}/endereco`, 'POST', emptyAddress);
+        return response;
+    } catch (error) {
+        console.error('Error creating empty address:', error);
+        throw error;
+    }
+}
 export async function deleteData(url) {
     try {
         const response = await fetch(url, {
@@ -140,4 +163,11 @@ function refreshView(url) {
     } else if (url.includes('/paciente/')) {
         return renderPacientes();
     }
+}
+
+export async function salvarEndereco(enderecoData) {
+    const enderecoId = new URLSearchParams(window.location.search).get('enderecoId');
+    const method = enderecoId ? 'PUT' : 'POST';
+    enderecoData.pais = 'Brasil';
+    return saveData(`${API_BASE_URL}/endereco/${enderecoId || ''}`, method, enderecoData);
 }
