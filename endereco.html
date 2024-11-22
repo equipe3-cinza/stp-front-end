@@ -25,7 +25,7 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="logradouro">Logradouro</label>
+                        <label for="rua">Logradouro</label>
                         <input type="text" id="rua" name="rua" placeholder="Rua, Avenida, etc">
                     </div>
                 
@@ -86,7 +86,7 @@
                 
                    
                 <div class="form-actions">
-                    <button type="submit" class="btn-primary" onclick="salvarEndereco()">Salvar</button>
+                    <button id="btnSalvar" type="submit" class="btn-primary">Salvar</button>
                     <button type="reset" class="btn-secondary">Limpar</button>
                     <button type="button" class="btn-primary" onclick="window.history.back()">Voltar</button>
                     
@@ -98,9 +98,10 @@
 
     </main>
     <div id="footer-container"></div>
-    <script src="scripts/main.js"></script>
+    <script type="module" src="scripts/main.js"></script>
     <script src="scripts/components.js"></script>
-    <script src="scripts/endereco.js"></script>
+    <script type="module" src="scripts/endereco.js"></script>
+
     
 </body>
 

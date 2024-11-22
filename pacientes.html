@@ -9,9 +9,7 @@
 </head>
 
 <body>
-
     <div id="header-container"></div>
-
 
     <main>
         <div class="form-container">
@@ -59,8 +57,8 @@
                     <h3>Prontuário do paciente</h3>
                     <br>    
                     <div class="form-row">
-                    <div class="prontuario-form">    
-                        <input type="hidden" id="prontuarioId" name="prontuarioId">
+                        <div class="prontuario-form">    
+                            <input type="hidden" id="prontuarioId" name="prontuarioId">
                             <div class="form-group">
                                 <label for="classificacao">Classificação</label>
                                 <select id="classificacao" name="classificacao" required>
@@ -72,12 +70,11 @@
                             </div>
                         </div>
                     
-                            <div class="form-group">
-                                <label>Medicamentos Atuais</label>
-                                <div id="medicamentos-container">
-                                    <div class="medicamento-entry">
-                                        <select id="medicamentosAtuais" name="medicamentosAtuais" multiple></select>
-                                    </div>
+                        <div class="form-group">
+                            <label>Medicamentos Atuais</label>
+                            <div id="medicamentos-container">
+                                <div class="medicamento-entry">
+                                    <select id="medicamentosAtuais" name="medicamentosAtuais" multiple></select>
                                 </div>
                             </div>
                         </div>
@@ -85,9 +82,11 @@
                 </div>
                    
                 <div class="form-actions">
-                    <button type="submit" class="btn-primary">Cadastrar</button>
+                    <button id="btnSalvar" type="submit" class="btn-primary">Cadastrar</button>
                     <button type="reset" class="btn-secondary">Limpar</button>
-                    <button type="button" class="btn-primary" onclick="enderecoPaciente()">Editar Endereço</button>
+                    <button id="btnEndereco" type="button" class="btn-primary" style="visibility: hidden;">
+                        Editar Endereço
+                    </button>
                 </div>
             </form>
 
@@ -110,13 +109,11 @@
                 </div>
             </div>
         </div>
-
     </main>
+
     <div id="footer-container"></div>
 
     <script src="scripts/components.js"></script>
-    <script src="scripts/main.js"></script>
-    
+    <script type="module" src="scripts/main.js"></script>
 </body>
-
 </html>

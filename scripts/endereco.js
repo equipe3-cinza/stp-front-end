@@ -1,3 +1,6 @@
+import { fetchData, API_BASE_URL } from './api.js';
+import { showToast } from './notifications.js';
+
 document.addEventListener('DOMContentLoaded', async () => {
     const enderecoForm = document.getElementById('enderecoForm');
     const params = new URLSearchParams(window.location.search);
@@ -37,7 +40,12 @@ async function handleFormSubmit() {
     try {
         const enderecoData = getFormData();
         const savedEndereco = await salvarEndereco(enderecoData);
-        showSuccessMessage('Endereço salvo com sucesso!');
+                
+        const btnEndereco = document.querySelector('#btnEndereco');
+        if (btnEndereco) {
+            btnEndereco.style.visibility = 'hidden';
+        }
+        
         setTimeout(() => {
             window.history.back();
         }, 1500);
@@ -60,10 +68,11 @@ function getFormData() {
 }
 
 async function salvarEndereco(enderecoData) {
+    console.log("Salvando endereço: ",enderecoData);
     const token = localStorage.getItem('token');
     const enderecoId = new URLSearchParams(window.location.search).get('enderecoId');
     const method = enderecoId ? 'PUT' : 'POST';
-    
+    enderecoData.pais ='Brasil';
     const response = await fetch(`${API_BASE_URL}/endereco/${enderecoId || ''}`, {
         method,
         headers: { 
@@ -81,7 +90,7 @@ async function salvarEndereco(enderecoData) {
     if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
     }
-
+    showToast('Endereço salvo com sucesso!');
     return response.json();
 }
 
@@ -93,10 +102,11 @@ function handleUnauthorized() {
 
 function showSuccessMessage(message) {
     // Implement your success message UI
-    alert(message);
+    showToast(message);
 }
 
 function showErrorMessage(message) {
     // Implement your error message UI
-    alert(message);
+    showToast(message);
 }
+
