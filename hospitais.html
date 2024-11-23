@@ -29,16 +29,12 @@
                 
                     <div class="form-group">
                         <label for="telefone">Telefone</label>
-                        <input type="tel" id="telefone" name="telefone" required placeholder="(00) 00000-0000" pattern="\(\d{2}\)\s\d{4,5}-\d{4}" maxlength="15">
+                        <input type="tel" id="telefone" name="telefone" required placeholder="(00) 00000-0000" maxlength="15">
                     </div>
                 </div>
 
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="endereco">Endereço</label>
-                        <input type="text" id="endereco" name="endereco" placeholder="Digite o endereço completo" maxlength="200">
-                    </div>
-                
+                         
                     <div class="form-group">
                         <label for="dadosPessoal">Dados Pessoal</label>
                         <textarea id="dadosPessoal" name="dadosPessoal" placeholder="Digite informações sobre o quadro de pessoal"></textarea>
@@ -83,12 +79,18 @@
                         <select id="medicos" name="medicos" multiple>
                         </select>
                     </div>
+                    
                 </div>
-            
+                
                 <div class="form-actions">
-                    <button type="submit" class="btn-primary">Cadastrar</button>
+                    <button id="btnSalvar" type="submit" class="btn-primary">Cadastrar</button>
                     <button type="reset" class="btn-secondary">Limpar</button>
+                    <button id="btnEndereco" type="button" class="btn-primary" style="visibility: hidden;">
+                        Editar Endereço
+                    </button>
                 </div>
+                
+                
             </form>
             
             <div class="table-container">
@@ -113,6 +115,6 @@
 
     <div id="footer-container"></div>
     <script src="scripts/components.js"></script>
-    <script src="scripts/main.js"></script>
+    <script type="module" src="scripts/main.js"></script>
 </body>
 </html>

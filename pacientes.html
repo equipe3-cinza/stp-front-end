@@ -9,9 +9,7 @@
 </head>
 
 <body>
-
     <div id="header-container"></div>
-
 
     <main>
         <div class="form-container">
@@ -25,11 +23,11 @@
                     </div>
                     <div class="form-group">
                         <label for="cpf">CPF</label>
-                        <input type="text" id="cpf" name="cpf" required placeholder="000.000.000-00" pattern="\d{3}\.?\d{3}\.?\d{3}-?\d{2}" maxlength="14">
+                        <input type="text" id="cpf" name="cpf" required placeholder="000.000.000-00" maxlength="14">
                     </div>
                     <div class="form-group">
                         <label for="telefone">Telefone</label>
-                        <input type="tel" id="telefone" name="telefone" required placeholder="(00) 00000-0000" pattern="\(\d{2}\)\s\d{4,5}-\d{4}" maxlength="15">
+                        <input type="tel" id="telefone" name="telefone" required placeholder="(00) 00000-0000" maxlength="15">
                     </div>
                 </div>
 
@@ -38,10 +36,7 @@
                         <label for="email">E-mail</label>
                         <input type="email" id="email" name="email" placeholder="exemplo@email.com">
                     </div>
-                    <div class="form-group">
-                        <label for="endereco">Endereço</label>
-                        <input type="text" id="endereco" name="endereco" placeholder="Digite o endereço completo" maxlength="200">
-                    </div>
+     
                     <div class="form-group">
                         <label for="tipoSanguineo">Tipo Sanguíneo</label>
                         <select id="tipoSanguineo" name="tipoSanguineo" required>
@@ -58,16 +53,40 @@
                     </div>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="prontuario">Prontuário</label>
-                        <input type="text" id="prontuario" name="prontuario" placeholder="Digite o número do prontuário" maxlength="20">
+                <div class="form-container-prontuario">
+                    <h3>Prontuário do paciente</h3>
+                    <br>    
+                    <div class="form-row">
+                        <div class="prontuario-form">    
+                            <input type="hidden" id="prontuarioId" name="prontuarioId">
+                            <div class="form-group">
+                                <label for="classificacao">Classificação</label>
+                                <select id="classificacao" name="classificacao" required>
+                                    <option value="">Selecione uma classificação</option>
+                                    <option value="primaria">Primária</option>
+                                    <option value="secundaria">Secundária</option>
+                                    <option value="terciaria">Terciária</option>
+                                </select>
+                            </div>
+                        </div>
+                    
+                        <div class="form-group">
+                            <label>Medicamentos Atuais</label>
+                            <div id="medicamentos-container">
+                                <div class="medicamento-entry">
+                                    <select id="medicamentosAtuais" name="medicamentosAtuais" multiple></select>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-
+                   
                 <div class="form-actions">
-                    <button type="submit" class="btn-primary">Cadastrar</button>
+                    <button id="btnSalvar" type="submit" class="btn-primary">Cadastrar</button>
                     <button type="reset" class="btn-secondary">Limpar</button>
+                    <button id="btnEndereco" type="button" class="btn-primary" style="visibility: hidden;">
+                        Editar Endereço
+                    </button>
                 </div>
             </form>
 
@@ -90,12 +109,11 @@
                 </div>
             </div>
         </div>
-
     </main>
+
     <div id="footer-container"></div>
 
     <script src="scripts/components.js"></script>
-    <script src="scripts/main.js"></script>
+    <script type="module" src="scripts/main.js"></script>
 </body>
-
 </html>
