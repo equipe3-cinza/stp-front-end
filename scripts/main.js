@@ -1,6 +1,6 @@
 import { fetchData, saveData, deleteData , API_BASE_URL} from './api.js';
 import { login, logout, checkAuth } from './auth.js';
-import { editData, setupForm, setupEnderecoForm, resetForm } from './forms.js';
+import { editData, setupForm, setupEnderecoForm, resetForm ,} from './forms.js';
 import { renderTable, renderUsers, renderHospitais, renderPacientes } from './renders.js';
 import { getUserTemplate, getHospitalTemplate, getPacienteTemplate } from './templates.js'
 import { loadEnderecoData, loadEnderecoById, loadMedicamentos, loadMedicos } from './loaders.js';
@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (!checkAuth()) return;
     
     setupEnderecoForm();
-    
+
     const hospitalForm = document.getElementById('hospitalForm');
     const pacienteForm = document.getElementById('pacienteForm');
     const userForm = document.getElementById('userForm');
@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     const forms = [hospitalForm, pacienteForm, userForm].filter(form => form);
     forms.forEach(form => {
+        form.reset();
         form.querySelector('button[type="reset"]').addEventListener('click', (e) => {
             e.preventDefault();
             form.reset();
@@ -43,6 +44,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                 btnSalvar.textContent = "Cadastrar"
         });
     });
+
+
 
     if (pacienteForm) {
         await loadMedicamentos();

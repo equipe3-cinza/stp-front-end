@@ -169,5 +169,22 @@ export async function salvarEndereco(enderecoData) {
     const enderecoId = new URLSearchParams(window.location.search).get('enderecoId');
     const method = enderecoId ? 'PUT' : 'POST';
     enderecoData.pais = 'Brasil';
-    return saveData(`${API_BASE_URL}/endereco/${enderecoId || ''}`, method, enderecoData);
+    
+    try {
+        const result = await saveData(`${API_BASE_URL}/endereco/${enderecoId || ''}`, method, enderecoData);
+        
+        if (window.opener) {
+            const parentForm = window.opener.document.querySelector('form');
+            if (parentForm) {
+                const resetFormFunction = window.opener.resetForm;
+                if (resetFormFunction) {
+                    resetFormFunction(parentForm);
+                }
+            }
+        }
+        
+        return result;
+    } catch (error) {
+        throw error;
+    }
 }

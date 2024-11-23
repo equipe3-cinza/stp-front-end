@@ -5,6 +5,7 @@ import { salvarEndereco,saveData,fetchData, API_BASE_URL } from './api.js';
 
 
 export function setupForm(form, apiUrl, renderCallback) {
+    resetForm(form);
     console.log("setupForm ");
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -97,7 +98,7 @@ export function resetForm(form) {
                 option.selected = false;
             });
         });
-        const btnEndereco = document.querySelector('#btnEndereco');
+        const btnEndereco = form.querySelector('#btnEndereco');
         if (btnEndereco) {
             btnEndereco.style.visibility = 'hidden';
         }
@@ -110,7 +111,8 @@ export function resetForm(form) {
     
 
 export function getFormData(form) {
-    
+    const formData = new FormData(form);
+    return Object.fromEntries(formData.entries());
 }
 
 export async function populateFormData(form, data) {
@@ -229,14 +231,22 @@ export function setupEnderecoForm() {
         const enderecoData = getEnderecoFormData();
         try {
             await salvarEndereco(enderecoData);
-            resetForm(enderecoForm);
-            setTimeout(() => window.history.back(), 1500);
+            if (window.opener) {
+                const parentForm = window.opener.document.querySelector('form');
+                if (parentForm) {
+                    resetForm(parentForm);
+                }
+            }
+            window.opener?.document.querySelector('form')?.reset();
+            
+            setTimeout(() => window.history.back(), 1000);
         } catch (error) {
             console.error('Error saving address:', error);
             showToast('Erro ao salvar endereço');
         }
     });
 }
+
 function getEnderecoFormData() {
     const fields = ['cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'estado'];
     const formData = {};
