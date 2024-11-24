@@ -18,16 +18,35 @@ const getAuthHeaders = () => {
 
 const handleResponse = async (response) => {
     if (response.status === 401) {
+        showToast('Sua sessão expirou. Por favor, faça login novamente.', 'error');
         handleUnauthorized();
         return;
     }
     
     if (response.status === 400) {
         const errorData = await response.json();
-        throw new Error(errorData.message || response.statusText);
+        throw new Error(`Erro de validação: ${errorData.message || 'Verifique os dados informados'}`);
     }
     
-    if (!response.ok) throw new Error(`Error: ${response.status}`);
+    if (!response.ok) {
+        const statusMessages = {
+            200: 'Operação realizada com sucesso.',
+            201: 'Registro criado com sucesso.',
+            400: 'Dados inválidos. Por favor, verifique as informações fornecidas.',
+            401: 'Sua sessão expirou. Faça login novamente.',
+            403: 'Você não tem permissão para realizar esta ação.',
+            404: 'Recurso não encontrado. Verifique se o item ainda existe.',
+            409: 'Conflito de dados. Este registro já existe.',
+            422: 'Não foi possível processar sua solicitação. Verifique os dados.',
+            500: 'Erro no servidor. Por favor, tente novamente mais tarde.',
+            503: 'Serviço temporariamente indisponível. Tente novamente em alguns minutos.'
+        };
+        throw new Error(statusMessages[response.status] || `Erro ${response.status}: ${response.statusText}`);
+    }
+    
+    if (response.status === 200 || response.status === 201) {
+        showToast(response.status === 200 ? 'Operação realizada com sucesso.' : 'Registro criado com sucesso.', 'success');
+    }
     
     return response.json();
 };
@@ -37,7 +56,7 @@ export async function fetchData(url) {
         const response = await fetch(url, {
             headers: getAuthHeaders()
         });
-        return handleResponse(response);
+        return response.json();
     } catch (error) {
         console.error('Fetch error:', error);
         throw error;
@@ -47,10 +66,11 @@ export async function fetchData(url) {
 export async function saveData(url, method, data) {
     const token = localStorage.getItem('token');
 
-    if(data.id && method=='PUT')
+    if(data.id && method === 'PUT') {
         delete data.id;
+    }
 
-    if (data.prontuario){
+    if (data.prontuario) {
         const prontuario = data.prontuario;
         prontuario.paciente = "";
         console.log("saving prontuario ", prontuario);
@@ -66,7 +86,7 @@ export async function saveData(url, method, data) {
             data.prontuario = savedProntuario.id;
         }
         console.log("prontuario salvo ", data.prontuario);
-        if (method === 'PUT'&&  data.id) {
+        if (method === 'PUT' && data.id) {
             delete data.id;
         }
     }
@@ -88,22 +108,8 @@ export async function saveData(url, method, data) {
             },
             body: JSON.stringify(data)
         });        
-        if (response.status === 401) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = 'login.html';
-            return;
-        }
-        if (response.status === 400) {
-            const errorData = await response.json();
-            console.error('Error:', errorData);
-            throw new Error(errorData.message || response.statusText);
-        }
-
-        if (!response.ok) throw new Error(`Error: ${response.status}`);
-        console.log("saved data!", data);
-        showToast('Dados salvos com sucesso!');
-        return response.json();
+        
+        return handleResponse(response);
     } catch (error) {
         console.error('Save error:', error);
         throw error;
@@ -130,6 +136,7 @@ async function createEmptyAddress() {
         throw error;
     }
 }
+
 export async function deleteData(url) {
     try {
         const response = await fetch(url, {
@@ -137,7 +144,9 @@ export async function deleteData(url) {
             headers: getAuthHeaders()
         });
         
-        if (!response.ok) throw new Error(`Error: ${response.status}`);
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+        }
         
         const contentType = response.headers.get("content-type");
         if (contentType && contentType.includes("application/json")) {
@@ -147,7 +156,7 @@ export async function deleteData(url) {
         }
         
         await refreshView(url);
-        showToast('Dados excluidos com sucesso!');
+        showToast('Dados excluídos com sucesso!', 'success');
         return true;
     } catch (error) {
         console.error('Error deleting:', error);

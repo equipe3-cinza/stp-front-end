@@ -15,7 +15,7 @@ export function setupForm(form, apiUrl, renderCallback) {
             const password2 = form.querySelector('#password2').value;
             
             if (password !== password2) {
-                showToast('As senhas não coincidem!');
+                showToast('As senhas não coincidem. Por favor, digite novamente.', 'error');
                 return;
             }
         }
@@ -82,7 +82,7 @@ export function setupForm(form, apiUrl, renderCallback) {
                 }
             } catch (error) {
                 console.error('Error saving:', error);
-                showToast('Erro ao salvar dados: ' + error.message);
+                showToast('Erro ao salvar dados: ' + error.message, 'error');
             }
         });
     }
@@ -242,8 +242,7 @@ export function setupEnderecoForm() {
             setTimeout(() => window.history.back(), 1000);
         } catch (error) {
             console.error('Error saving address:', error);
-            showToast('Erro ao salvar endereço');
-        }
+            showToast('Erro ao salvar endereço', 'error');        }
     });
 }
 

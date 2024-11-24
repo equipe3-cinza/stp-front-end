@@ -1,3 +1,4 @@
+
 import { fetchData, saveData, deleteData , API_BASE_URL} from './api.js';
 import { login, logout, checkAuth } from './auth.js';
 import { editData, setupForm, setupEnderecoForm, resetForm ,} from './forms.js';
@@ -18,6 +19,25 @@ function refreshView(url) {
 document.addEventListener('DOMContentLoaded', async function() {
     if (!checkAuth()) return;
     
+    await loadComponent('components/header', 'header-container');
+    const currentPage = window.location.pathname.split('/').pop();
+    const menuItems = document.querySelectorAll('nav a');
+    menuItems.forEach(item => {
+        if (item.getAttribute('href') === currentPage) {
+            item.classList.add('active');
+        }
+    });
+
+
+    const userData = JSON.parse(localStorage.getItem('user'));
+    if (userData) {
+        const userNameElement = document.getElementById('user-name');
+        const userRoleElement = document.getElementById('user-role');
+        
+        if (userNameElement) userNameElement.textContent = `Usuario: ${userData.login}`;
+        if (userRoleElement) userRoleElement.textContent = `Permissão: ${userData.roles.join(', ')}`;
+    }
+
     setupEnderecoForm();
 
     const hospitalForm = document.getElementById('hospitalForm');
@@ -45,8 +65,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     });
 
-
-
     if (pacienteForm) {
         await loadMedicamentos();
         setupForm(pacienteForm, `${API_BASE_URL}/paciente`, renderPacientes);
@@ -62,6 +80,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (document.getElementById('usersTableBody')) await renderUsers();
     if (document.getElementById('hospitaisTableBody')) await renderHospitais();
     if (document.getElementById('pacientesTableBody')) await renderPacientes();
+
+
 });
 
 window.logout = logout;

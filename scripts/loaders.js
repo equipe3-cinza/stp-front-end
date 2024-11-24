@@ -61,11 +61,5 @@ export async function loadEnderecoData(enderecoId) {
         populateForm(endereco);
     } catch (error) {
         console.error('Error loading address:', error);
-        showErrorMessage('Erro ao carregar dados do endereço');
-    }
-}
-
-
-function showErrorMessage(message) {
-    showToast(message);
+        showToast('Erro ao carregar dados do endereço', 'error');    }
 }

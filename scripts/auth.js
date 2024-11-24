@@ -1,11 +1,11 @@
 import { API_BASE_URL } from "./api.js";
+import { showToast } from './notifications.js';
 
 export async function login() {
-
     const usuario = document.getElementById('usuario').value;
     const senha = document.getElementById('senha').value;
     if (!usuario || !senha) {
-        showToast('Por favor, preencha todos os campos');
+        showToast('Por favor, preencha todos os campos', 'error');
         return;
     }
 
@@ -31,13 +31,11 @@ export async function login() {
             localStorage.setItem('token', data.token);
             window.location.href = 'index.html';
         } else {
-            showToast('Usuário ou senha inválidos');
-            
+            showToast('Usuário ou senha inválidos', 'error');
         }
-        
     } catch (error) {
         console.error('Erro ao fazer login:', error);
-        showToast('Erro ao fazer login. Verifique suas credenciais.');
+        showToast('Erro ao fazer login. Verifique suas credenciais.', 'error');
     }
 }
 
@@ -59,3 +57,4 @@ export function checkAuth() {
 }
 
 window.login = login;
+window.logout = logout;
