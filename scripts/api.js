@@ -1,7 +1,7 @@
 import { renderUsers, renderHospitais, renderPacientes } from './renders.js';
 import { showToast } from './notifications.js';
 
-export const API_BASE_URL = 'http://wil.app.br:3000/api';
+export const API_BASE_URL = 'http://wil.app.br/api';
 
 const handleUnauthorized = () => {
     localStorage.removeItem('token');
